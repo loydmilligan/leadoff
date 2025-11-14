@@ -1,0 +1,43 @@
+{
+  "name": "leadoff-crm",
+  "version": "1.0.0",
+  "description": "LeadOff CRM - Lead tracking and management system",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared/types"
+  ],
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter leadoff-backend dev\" \"pnpm --filter leadoff-frontend dev\"",
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test",
+    "test:unit": "pnpm --recursive run test:unit",
+    "test:e2e": "pnpm --filter leadoff-frontend test:e2e",
+    "typecheck": "pnpm --recursive run typecheck",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
+    "db:migrate": "pnpm --filter leadoff-backend db:migrate",
+    "db:studio": "pnpm --filter leadoff-backend db:studio",
+    "db:seed": "pnpm --filter leadoff-backend db:seed",
+    "db:reset": "pnpm --filter leadoff-backend db:reset",
+    "db:setup": "pnpm --filter leadoff-backend db:setup"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.14.0",
+    "@typescript-eslint/parser": "^8.14.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "prettier": "^3.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
