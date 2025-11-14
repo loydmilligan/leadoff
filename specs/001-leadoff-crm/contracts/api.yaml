@@ -1,0 +1,1197 @@
+openapi: 3.0.3
+info:
+  title: LeadOff CRM API
+  description: |
+    RESTful API for LeadOff CRM system. Supports lead management, follow-up tracking,
+    pipeline visualization, and reporting.
+  version: 1.0.0
+  contact:
+    name: LeadOff Development Team
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+  - url: https://api.leadoff.example.com/v1
+    description: Production server (placeholder)
+
+tags:
+  - name: Leads
+    description: Lead CRUD operations and search
+  - name: Activities
+    description: Activity logging and history
+  - name: Organization
+    description: Organization details for opportunities
+  - name: Demo
+    description: Demo scheduling and details
+  - name: Proposals
+    description: Proposal management
+  - name: Reports
+    description: Analytics and reporting endpoints
+
+paths:
+  # ============================================================================
+  # LEADS
+  # ============================================================================
+
+  /leads:
+    get:
+      summary: List all leads
+      description: Get paginated list of leads with optional filtering
+      tags: [Leads]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+        - name: stage
+          in: query
+          description: Filter by current stage
+          schema:
+            $ref: '#/components/schemas/Stage'
+        - name: search
+          in: query
+          description: Search across company name, contact name, email
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          description: Sort field
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, companyName, nextFollowUpDate]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  leads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Create new lead
+      description: Create a new lead from inquiry information
+      tags: [Leads]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLeadRequest'
+      responses:
+        '201':
+          description: Lead created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Potential duplicate lead detected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Potential duplicate detected"
+                  existingLead:
+                    $ref: '#/components/schemas/Lead'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /leads/{id}:
+    get:
+      summary: Get lead by ID
+      description: Retrieve detailed information for a specific lead
+      tags: [Leads]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    patch:
+      summary: Update lead
+      description: Update lead information (partial update)
+      tags: [Leads]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLeadRequest'
+      responses:
+        '200':
+          description: Lead updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Delete lead
+      description: Permanently delete a lead and all related data
+      tags: [Leads]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      responses:
+        '204':
+          description: Lead deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /leads/{id}/stage:
+    patch:
+      summary: Update lead stage
+      description: Move lead to a different pipeline stage
+      tags: [Leads]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [toStage]
+              properties:
+                toStage:
+                  $ref: '#/components/schemas/Stage'
+                notes:
+                  type: string
+                  description: Optional note explaining stage change
+      responses:
+        '200':
+          description: Stage updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /leads/follow-ups:
+    get:
+      summary: Get upcoming follow-ups
+      description: Retrieve leads requiring follow-up (today or overdue)
+      tags: [Leads]
+      parameters:
+        - name: includeOverdue
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - name: days
+          in: query
+          description: Number of days ahead to include
+          schema:
+            type: integer
+            default: 7
+            minimum: 1
+            maximum: 30
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  overdue:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  today:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+                  upcoming:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Lead'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ============================================================================
+  # ACTIVITIES
+  # ============================================================================
+
+  /leads/{id}/activities:
+    get:
+      summary: Get lead activities
+      description: Retrieve activity history for a lead
+      tags: [Activities]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+        - name: type
+          in: query
+          description: Filter by activity type
+          schema:
+            $ref: '#/components/schemas/ActivityType'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Log new activity
+      description: Create a new activity entry for a lead
+      tags: [Activities]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+      responses:
+        '201':
+          description: Activity logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ============================================================================
+  # ORGANIZATION INFO
+  # ============================================================================
+
+  /leads/{id}/organization:
+    get:
+      summary: Get organization details
+      tags: [Organization]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      summary: Create or update organization details
+      tags: [Organization]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationInfoRequest'
+      responses:
+        '200':
+          description: Organization info updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+        '201':
+          description: Organization info created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ============================================================================
+  # DEMO DETAILS
+  # ============================================================================
+
+  /leads/{id}/demo:
+    get:
+      summary: Get demo details
+      tags: [Demo]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoDetails'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      summary: Create or update demo details
+      tags: [Demo]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DemoDetailsRequest'
+      responses:
+        '200':
+          description: Demo details updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoDetails'
+        '201':
+          description: Demo details created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoDetails'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ============================================================================
+  # PROPOSALS
+  # ============================================================================
+
+  /leads/{id}/proposal:
+    get:
+      summary: Get proposal
+      tags: [Proposals]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      summary: Create or update proposal
+      tags: [Proposals]
+      parameters:
+        - $ref: '#/components/parameters/LeadId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalRequest'
+      responses:
+        '200':
+          description: Proposal updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '201':
+          description: Proposal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ============================================================================
+  # REPORTS
+  # ============================================================================
+
+  /reports/pipeline-value:
+    get:
+      summary: Pipeline value report
+      description: Get total value and lead count by stage
+      tags: [Reports]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        stage:
+                          $ref: '#/components/schemas/Stage'
+                        leadCount:
+                          type: integer
+                        totalValue:
+                          type: number
+                          format: double
+                        conversionRate:
+                          type: number
+                          format: double
+                          description: Percentage converted to next stage
+                  totalPipelineValue:
+                    type: number
+                    format: double
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /reports/lead-age:
+    get:
+      summary: Lead age report
+      description: Get leads sorted by time in current stage
+      tags: [Reports]
+      parameters:
+        - name: threshold
+          in: query
+          description: Highlight leads older than N days
+          schema:
+            type: integer
+            default: 14
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    lead:
+                      $ref: '#/components/schemas/Lead'
+                    daysInStage:
+                      type: integer
+                    isStale:
+                      type: boolean
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /reports/weekly-summary:
+    get:
+      summary: Weekly activity summary
+      description: Get activity counts for the past week
+      tags: [Reports]
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date (defaults to 7 days ago)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: End date (defaults to today)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newLeads:
+                    type: integer
+                  stageProgressions:
+                    type: integer
+                  demosScheduled:
+                    type: integer
+                  demosCompleted:
+                    type: integer
+                  proposalsSent:
+                    type: integer
+                  dealsWon:
+                    type: integer
+                  dealsLost:
+                    type: integer
+                  activitiesLogged:
+                    type: integer
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /reports/win-loss:
+    get:
+      summary: Win/loss analysis
+      description: Get win rate and loss reasons
+      tags: [Reports]
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  winRate:
+                    type: number
+                    format: double
+                    description: Percentage of won deals
+                  totalDeals:
+                    type: integer
+                  won:
+                    type: integer
+                  lost:
+                    type: integer
+                  averageDealSize:
+                    type: number
+                    format: double
+                  averageSalesCycle:
+                    type: integer
+                    description: Days from creation to close
+                  lostReasons:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        reason:
+                          type: string
+                        count:
+                          type: integer
+                        percentage:
+                          type: number
+                          format: double
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+# ==============================================================================
+# COMPONENTS
+# ==============================================================================
+
+components:
+  parameters:
+    LeadId:
+      name: id
+      in: path
+      required: true
+      description: Lead unique identifier
+      schema:
+        type: string
+
+  schemas:
+    # Enums
+    Stage:
+      type: string
+      enum:
+        - INQUIRY
+        - QUALIFICATION
+        - OPPORTUNITY
+        - DEMO_SCHEDULED
+        - DEMO_COMPLETE
+        - PROPOSAL_SENT
+        - NEGOTIATION
+        - CLOSED_WON
+        - CLOSED_LOST
+
+    LeadSource:
+      type: string
+      enum:
+        - EMAIL
+        - PHONE
+        - WEBSITE
+        - REFERRAL
+        - TRADE_SHOW
+        - OTHER
+
+    ActivityType:
+      type: string
+      enum:
+        - CALL
+        - EMAIL
+        - MEETING
+        - NOTE
+        - DEMO
+        - PROPOSAL_SENT
+        - CONTRACT_SENT
+        - OTHER
+
+    ProposalStatus:
+      type: string
+      enum:
+        - DRAFT
+        - SENT
+        - VIEWED
+        - ACCEPTED
+        - REJECTED
+        - EXPIRED
+
+    # Main entities
+    Lead:
+      type: object
+      required:
+        - id
+        - companyName
+        - contactName
+        - phone
+        - email
+        - currentStage
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        companyName:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        contactTitle:
+          type: string
+          nullable: true
+        companyDescription:
+          type: string
+          nullable: true
+        leadSource:
+          $ref: '#/components/schemas/LeadSource'
+        currentStage:
+          $ref: '#/components/schemas/Stage'
+        estimatedValue:
+          type: number
+          format: double
+          nullable: true
+        nextFollowUpDate:
+          type: string
+          format: date-time
+          nullable: true
+        lastActivityDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LeadDetail:
+      allOf:
+        - $ref: '#/components/schemas/Lead'
+        - type: object
+          properties:
+            activities:
+              type: array
+              items:
+                $ref: '#/components/schemas/Activity'
+            organizationInfo:
+              $ref: '#/components/schemas/OrganizationInfo'
+              nullable: true
+            demoDetails:
+              $ref: '#/components/schemas/DemoDetails'
+              nullable: true
+            proposal:
+              $ref: '#/components/schemas/Proposal'
+              nullable: true
+            stageHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/StageHistory'
+
+    Activity:
+      type: object
+      required:
+        - id
+        - leadId
+        - type
+        - description
+        - activityDate
+        - createdAt
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        description:
+          type: string
+        activityDate:
+          type: string
+          format: date-time
+        nextFollowUpDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+
+    OrganizationInfo:
+      type: object
+      required:
+        - id
+        - leadId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        industry:
+          type: string
+          nullable: true
+        employeeCount:
+          type: integer
+          nullable: true
+        decisionTimeline:
+          type: string
+          nullable: true
+        keyStakeholders:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              title:
+                type: string
+              role:
+                type: string
+          nullable: true
+        specificNeeds:
+          type: string
+          nullable: true
+        currentSolution:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DemoDetails:
+      type: object
+      required:
+        - id
+        - leadId
+        - demoDate
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        demoDate:
+          type: string
+          format: date-time
+        demoTime:
+          type: string
+          nullable: true
+        meetingLink:
+          type: string
+          nullable: true
+        userCountEstimate:
+          type: integer
+          nullable: true
+        requiredModules:
+          type: array
+          items:
+            type: string
+          nullable: true
+        cardlockVolume:
+          type: string
+          nullable: true
+        demoNotes:
+          type: string
+          nullable: true
+        attendees:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              title:
+                type: string
+          nullable: true
+        followUpItems:
+          type: array
+          items:
+            type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Proposal:
+      type: object
+      required:
+        - id
+        - leadId
+        - proposalDate
+        - estimatedValue
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        proposalDate:
+          type: string
+          format: date-time
+        estimatedValue:
+          type: number
+          format: double
+        documentUrl:
+          type: string
+          nullable: true
+        validUntil:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ProposalStatus'
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    StageHistory:
+      type: object
+      required:
+        - id
+        - leadId
+        - toStage
+        - changedAt
+        - changedBy
+      properties:
+        id:
+          type: string
+        leadId:
+          type: string
+        fromStage:
+          $ref: '#/components/schemas/Stage'
+          nullable: true
+        toStage:
+          $ref: '#/components/schemas/Stage'
+        changedAt:
+          type: string
+          format: date-time
+        changedBy:
+          type: string
+        notes:
+          type: string
+          nullable: true
+
+    # Request bodies
+    CreateLeadRequest:
+      type: object
+      required:
+        - companyName
+        - contactName
+        - phone
+        - email
+      properties:
+        companyName:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        contactTitle:
+          type: string
+        companyDescription:
+          type: string
+        leadSource:
+          $ref: '#/components/schemas/LeadSource'
+        estimatedValue:
+          type: number
+          format: double
+        nextFollowUpDate:
+          type: string
+          format: date-time
+
+    UpdateLeadRequest:
+      type: object
+      properties:
+        companyName:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        contactTitle:
+          type: string
+        companyDescription:
+          type: string
+        leadSource:
+          $ref: '#/components/schemas/LeadSource'
+        estimatedValue:
+          type: number
+          format: double
+        nextFollowUpDate:
+          type: string
+          format: date-time
+
+    CreateActivityRequest:
+      type: object
+      required:
+        - type
+        - description
+        - activityDate
+      properties:
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        description:
+          type: string
+        activityDate:
+          type: string
+          format: date-time
+        nextFollowUpDate:
+          type: string
+          format: date-time
+
+    OrganizationInfoRequest:
+      type: object
+      properties:
+        industry:
+          type: string
+        employeeCount:
+          type: integer
+        decisionTimeline:
+          type: string
+        keyStakeholders:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              title:
+                type: string
+              role:
+                type: string
+        specificNeeds:
+          type: string
+        currentSolution:
+          type: string
+
+    DemoDetailsRequest:
+      type: object
+      required:
+        - demoDate
+      properties:
+        demoDate:
+          type: string
+          format: date-time
+        demoTime:
+          type: string
+        meetingLink:
+          type: string
+        userCountEstimate:
+          type: integer
+        requiredModules:
+          type: array
+          items:
+            type: string
+        cardlockVolume:
+          type: string
+        demoNotes:
+          type: string
+        attendees:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              title:
+                type: string
+        followUpItems:
+          type: array
+          items:
+            type: string
+
+    ProposalRequest:
+      type: object
+      required:
+        - estimatedValue
+      properties:
+        estimatedValue:
+          type: number
+          format: double
+        documentUrl:
+          type: string
+        validUntil:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/ProposalStatus'
+        notes:
+          type: string
+
+    # Pagination
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+
+    # Errors
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Validation failed"
+            details: "email must be a valid email address"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Lead not found"
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+            details: "An unexpected error occurred"
