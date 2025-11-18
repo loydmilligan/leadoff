@@ -80,6 +80,7 @@ model Activity {
   type        String @default("NOTE") // ActivityType enum
   subject     String
   notes       String?
+  aiSummary   String?
   completed   Boolean      @default(false)
   dueDate     DateTime?
   completedAt DateTime?
