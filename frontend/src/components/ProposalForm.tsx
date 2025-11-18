@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useUpdateProposal, UpdateProposalInput, Proposal } from '../services/leadHooks'
+import { useUploadProposalFile, useUploadPriceSheet, useDeleteProposalFile } from '../services/proposalFileHooks'
 
 export interface ProposalFormProps {
   leadId: string
@@ -23,6 +24,9 @@ interface ProposalFormData {
 
 export const ProposalForm: React.FC<ProposalFormProps> = ({ leadId, initialData, onSuccess }) => {
   const updateProposal = useUpdateProposal()
+  const uploadProposal = useUploadProposalFile()
+  const uploadPriceSheet = useUploadPriceSheet()
+  const deleteFile = useDeleteProposalFile()
 
   const [formData, setFormData] = useState<ProposalFormData>({
     proposalDate: (initialData ? new Date(initialData.proposalDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]) as string,
@@ -127,6 +131,25 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({ leadId, initialData,
       currency: 'USD',
     }).format(value)
   }
+
+  // File upload handlers
+  const handleProposalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !initialData?.id) return
+
+    await uploadProposal.mutateAsync({ proposalId: initialData.id, file })
+    e.target.value = '' // Reset input
+  }
+
+  const handlePriceSheetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !initialData?.id) return
+
+    await uploadPriceSheet.mutateAsync({ proposalId: initialData.id, file })
+    e.target.value = '' // Reset input
+  }
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -309,6 +332,107 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({ leadId, initialData,
           </div>
         )}
       </form>
+
+      {/* File Attachments Section */}
+      {initialData?.id && (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h3 className="text-lg font-semibold mb-4">Attachments</h3>
+
+          {/* Proposal PDF */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Proposal PDF
+            </label>
+            {initialData.proposalFileName ? (
+              <div className="flex items-center gap-4">
+                <a
+                  href={`${API_BASE_URL}/api/v1/proposals/${initialData.id}/files/proposal`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  {initialData.proposalFileName}
+                </a>
+                <button
+                  onClick={() =>
+                    deleteFile.mutateAsync({
+                      proposalId: initialData.id,
+                      type: 'proposal',
+                    })
+                  }
+                  disabled={deleteFile.isPending}
+                  className="text-red-600 hover:text-red-900 text-sm disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleProposalUpload}
+                  disabled={uploadProposal.isPending}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                />
+                {uploadProposal.isPending && (
+                  <p className="mt-2 text-sm text-blue-600">Uploading...</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Price Sheet Excel */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price Sheet (Excel)
+            </label>
+            {initialData.priceSheetFileName ? (
+              <div className="flex items-center gap-4">
+                <a
+                  href={`${API_BASE_URL}/api/v1/proposals/${initialData.id}/files/price-sheet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {initialData.priceSheetFileName}
+                </a>
+                <button
+                  onClick={() =>
+                    deleteFile.mutateAsync({
+                      proposalId: initialData.id,
+                      type: 'price-sheet',
+                    })
+                  }
+                  disabled={deleteFile.isPending}
+                  className="text-red-600 hover:text-red-900 text-sm disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div>
+                <input
+                  type="file"
+                  accept=".xls,.xlsx"
+                  onChange={handlePriceSheetUpload}
+                  disabled={uploadPriceSheet.isPending}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                />
+                {uploadPriceSheet.isPending && (
+                  <p className="mt-2 text-sm text-blue-600">Uploading...</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
