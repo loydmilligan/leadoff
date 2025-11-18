@@ -13,6 +13,9 @@ import { OrganizationForm } from '../components/OrganizationForm'
 import { DemoForm } from '../components/DemoForm'
 import { ProposalForm } from '../components/ProposalForm'
 import { OpportunitySummary } from '../components/OpportunitySummary'
+import { CloseAsWonModal } from '../components/modals/CloseAsWonModal'
+import { CloseAsLostModal } from '../components/modals/CloseAsLostModal'
+import { MoveToNurtureModal } from '../components/modals/MoveToNurtureModal'
 import { format } from 'date-fns'
 
 type TabType = 'overview' | 'organization' | 'demo' | 'proposal'
@@ -25,6 +28,10 @@ export function LeadDetail() {
   // Get active tab from URL or default to 'overview'
   const activeTabFromUrl = (searchParams.get('tab') as TabType) || 'overview'
   const [activeTab, setActiveTab] = useState<TabType>(activeTabFromUrl)
+
+  const [showWonModal, setShowWonModal] = useState(false)
+  const [showLostModal, setShowLostModal] = useState(false)
+  const [showNurtureModal, setShowNurtureModal] = useState(false)
 
   const { data: lead, isLoading, isError, refetch } = useLead(id!)
 
@@ -107,6 +114,28 @@ export function LeadDetail() {
               )}
             </div>
             <FollowUpIndicator nextFollowUpDate={lead.nextFollowUpDate} />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={() => setShowWonModal(true)}
+              className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700"
+            >
+              Close as Won
+            </button>
+            <button
+              onClick={() => setShowLostModal(true)}
+              className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700"
+            >
+              Close as Lost
+            </button>
+            <button
+              onClick={() => setShowNurtureModal(true)}
+              className="px-4 py-2 text-white bg-purple-600 rounded-md hover:bg-purple-700"
+            >
+              Move to Nurture
+            </button>
           </div>
 
           {/* Quick Info */}
@@ -276,6 +305,26 @@ export function LeadDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <CloseAsWonModal
+        leadId={id!}
+        companyName={lead.companyName}
+        isOpen={showWonModal}
+        onClose={() => setShowWonModal(false)}
+      />
+      <CloseAsLostModal
+        leadId={id!}
+        companyName={lead.companyName}
+        isOpen={showLostModal}
+        onClose={() => setShowLostModal(false)}
+      />
+      <MoveToNurtureModal
+        leadId={id!}
+        companyName={lead.companyName}
+        isOpen={showNurtureModal}
+        onClose={() => setShowNurtureModal(false)}
+      />
     </NarrowScreenLayout>
   )
 }
