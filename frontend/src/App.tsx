@@ -6,6 +6,7 @@ import { LeadDetail } from './pages/LeadDetail'
 import { Reports } from './pages/Reports'
 import { Archive } from './pages/Archive'
 import { Planner } from './pages/Planner'
+import { Import } from './pages/Import'
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -80,6 +81,16 @@ function Navigation() {
               >
                 Planner
               </Link>
+              <Link
+                to="/import"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === '/import'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Import
+              </Link>
             </div>
           </div>
         </div>
@@ -100,6 +111,7 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/archive" element={<Archive />} />
             <Route path="/planner" element={<Planner />} />
+            <Route path="/import" element={<Import />} />
             <Route path="/leads/:id" element={<LeadDetail />} />
           </Routes>
         </div>

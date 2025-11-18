@@ -1,0 +1,6 @@
+companyName,contactName,phone,email,contactTitle,currentStage,estimatedValue,nextActionType,nextActionDescription,nextFollowUpDate,leadSource,notes
+"Acme Corp","John Smith","555-0100","john@acme.com","CEO","QUALIFICATION",50000,"PHONE_CALL","Discuss pricing and timeline","2025-11-20","REFERRAL","Referred by existing customer. Very interested in enterprise plan."
+"TechStart Inc","Jane Doe","555-0101","jane@techstart.com","CTO","DEMO_SCHEDULED",75000,"MEETING","Product demo scheduled","2025-11-19","WEBSITE","Submitted contact form. Looking for API integration capabilities."
+"Global Solutions","Bob Johnson","555-0102","bob@global.com","VP Sales","PROPOSAL_SENT",120000,"EMAIL","Follow up on proposal questions","2025-11-21","TRADE_SHOW","Met at conference. Has budget approved for Q1."
+"StartupXYZ","Alice Chen","555-0103","alice@startupxyz.com","Founder","INQUIRY",25000,"EMAIL","Send product overview","2025-11-22","PHONE","Cold call - showed interest in demo."
+"Enterprise Co","David Lee","555-0104","david@enterprise.co","Director IT","OPPORTUNITY",200000,"PHONE_CALL","Schedule technical deep dive","2025-11-25","REFERRAL","Referred by partner. Large deployment potential."
