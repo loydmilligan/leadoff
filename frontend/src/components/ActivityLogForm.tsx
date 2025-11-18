@@ -3,10 +3,11 @@
  * Form for logging activities and updating follow-up dates
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../services/api'
 import { leadKeys } from '../services/leadHooks'
+import { useTemplates, useRenderedTemplate } from '../services/templateHooks'
 
 export interface ActivityLogFormProps {
   leadId: string
@@ -36,6 +37,38 @@ export const ActivityLogForm: React.FC<ActivityLogFormProps> = ({ leadId, onSucc
     notes: '',
     dueDate: '',
   })
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
+
+  // Map activity types to template types
+  const getTemplateType = (activityType: string) => {
+    const mapping: Record<string, string> = {
+      'CALL': 'PHONE_CALL',
+      'EMAIL': 'EMAIL',
+      'NOTE': 'TEXT_MESSAGE',
+      'MEETING': 'EMAIL',
+      'TASK': 'EMAIL',
+    }
+    return mapping[activityType] || ''
+  }
+
+  const { data: templates } = useTemplates(getTemplateType(formData.type))
+  const { data: renderedTemplate } = useRenderedTemplate(selectedTemplate, leadId)
+
+  // Auto-fill subject and notes when template is selected
+  useEffect(() => {
+    if (renderedTemplate) {
+      setFormData((prev) => ({
+        ...prev,
+        subject: renderedTemplate.subject || renderedTemplate.name || prev.subject,
+        notes: renderedTemplate.body || prev.notes,
+      }))
+    }
+  }, [renderedTemplate])
+
+  // Reset template selection when activity type changes
+  useEffect(() => {
+    setSelectedTemplate('')
+  }, [formData.type])
 
   const createActivityMutation = useMutation({
     mutationFn: (data: ActivityInput) => api.post(`/leads/${leadId}/activities`, data),
@@ -88,6 +121,31 @@ export const ActivityLogForm: React.FC<ActivityLogFormProps> = ({ leadId, onSucc
             ))}
           </select>
         </div>
+
+        {/* Template Selector */}
+        {templates && templates.length > 0 && (
+          <div>
+            <label htmlFor="template" className="block text-sm font-medium text-gray-700 mb-1">
+              Load Template
+            </label>
+            <select
+              id="template"
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">-- Select a template --</option>
+              {templates.map((template: any) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Templates auto-fill the subject and notes fields
+            </p>
+          </div>
+        )}
 
         {/* Subject */}
         <div>
