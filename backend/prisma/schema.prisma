@@ -42,6 +42,16 @@ model Lead {
   nextFollowUpDate  DateTime?
   lastActivityDate  DateTime?
 
+  // Next Action tracking
+  nextActionType        String?
+  nextActionDescription String?
+  nextActionDueDate     DateTime?
+
+  // Archive support
+  isArchived            Boolean   @default(false)
+  archivedAt            DateTime?
+  archiveReason         String?
+
   // Metadata
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -60,6 +70,8 @@ model Lead {
   @@index([currentStage])
   @@index([nextFollowUpDate])
   @@index([createdAt])
+  @@index([nextActionDueDate])
+  @@index([isArchived])
 }
 
 model Activity {

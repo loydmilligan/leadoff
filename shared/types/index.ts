@@ -13,6 +13,8 @@ export enum Stage {
   NEGOTIATION = 'NEGOTIATION',
   CLOSED_WON = 'CLOSED_WON',
   CLOSED_LOST = 'CLOSED_LOST',
+  NURTURE_30_DAY = 'NURTURE_30_DAY',
+  NURTURE_90_DAY = 'NURTURE_90_DAY',
 }
 
 export enum LeadSource {
