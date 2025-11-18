@@ -93,7 +93,7 @@ export async function pipelineValue(): Promise<PipelineValueReport> {
   const activeLeads = await prisma.lead.findMany({
     where: {
       currentStage: {
-        notIn: [Stage.CLOSED_WON, Stage.CLOSED_LOST],
+        notIn: [Stage.CLOSED_WON, Stage.CLOSED_LOST, Stage.NURTURE_30_DAY, Stage.NURTURE_90_DAY],
       },
     },
     select: {
@@ -185,7 +185,7 @@ export async function leadAge(): Promise<LeadAgeReport> {
   const leads = await prisma.lead.findMany({
     where: {
       currentStage: {
-        notIn: [Stage.CLOSED_WON, Stage.CLOSED_LOST],
+        notIn: [Stage.CLOSED_WON, Stage.CLOSED_LOST, Stage.NURTURE_30_DAY, Stage.NURTURE_90_DAY],
       },
     },
     include: {
