@@ -68,7 +68,9 @@ export class LeadModel {
     const skip = (page - 1) * limit
 
     // Build where clause
-    const where: Prisma.LeadWhereInput = {}
+    const where: Prisma.LeadWhereInput = {
+      isArchived: false,
+    }
 
     if (stage) {
       where.currentStage = stage

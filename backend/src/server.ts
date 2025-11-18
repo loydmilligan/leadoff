@@ -8,6 +8,7 @@ import cors from '@fastify/cors'
 import { leadRoutes } from './api/routes/leads'
 import { reportRoutes } from './api/routes/reports'
 import { leadActionRoutes } from './api/routes/leadActions'
+import { archiveRoutes } from './api/routes/archive'
 
 const SERVER_PORT = 3000
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5174'
@@ -37,6 +38,7 @@ server.get('/health', async () => {
 await server.register(leadRoutes)
 await server.register(reportRoutes)
 await server.register(leadActionRoutes)
+await server.register(archiveRoutes)
 
 // Start server
 const start = async () => {

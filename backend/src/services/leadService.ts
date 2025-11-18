@@ -216,6 +216,7 @@ export class LeadService {
     // Get all active leads with follow-up dates (not closed)
     const leads = await prisma.lead.findMany({
       where: {
+        isArchived: false,
         nextFollowUpDate: {
           not: null,
         },
