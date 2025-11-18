@@ -5,73 +5,74 @@ import {
   getFollowUpStatus,
 } from '../../src/utils/followUpCalculator';
 import { addDays, addHours, subDays, startOfDay } from 'date-fns';
+import { Stage } from '@leadoff/types';
 
 describe('followUpCalculator', () => {
   const baseDate = new Date('2025-01-15T10:00:00Z');
 
   describe('calculateNextFollowUp', () => {
     it('should calculate +24 hours for INQUIRY stage', () => {
-      const result = calculateNextFollowUp({ stage: 'INQUIRY', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.INQUIRY, baseDate });
       const expected = addHours(baseDate, 24);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +48 hours for QUALIFICATION stage', () => {
-      const result = calculateNextFollowUp({ stage: 'QUALIFICATION', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.QUALIFICATION, baseDate });
       const expected = addHours(baseDate, 48);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +3 days for OPPORTUNITY stage', () => {
-      const result = calculateNextFollowUp({ stage: 'OPPORTUNITY', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.OPPORTUNITY, baseDate });
       const expected = addDays(baseDate, 3);
       expect(result).toEqual(expected);
     });
 
     it('should calculate 1 day before demo date for DEMO_SCHEDULED with demoDate', () => {
       const demoDate = addDays(baseDate, 5);
-      const result = calculateNextFollowUp({ stage: 'DEMO_SCHEDULED', baseDate, demoDate });
+      const result = calculateNextFollowUp({ stage: Stage.DEMO_SCHEDULED, baseDate, demoDate });
       const expected = addDays(startOfDay(demoDate), -1);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +1 day for DEMO_SCHEDULED without demoDate', () => {
-      const result = calculateNextFollowUp({ stage: 'DEMO_SCHEDULED', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.DEMO_SCHEDULED, baseDate });
       const expected = addDays(baseDate, 1);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +1 day for DEMO_COMPLETE stage', () => {
-      const result = calculateNextFollowUp({ stage: 'DEMO_COMPLETE', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.DEMO_COMPLETE, baseDate });
       const expected = addDays(baseDate, 1);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +3 days for PROPOSAL_SENT stage', () => {
-      const result = calculateNextFollowUp({ stage: 'PROPOSAL_SENT', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.PROPOSAL_SENT, baseDate });
       const expected = addDays(baseDate, 3);
       expect(result).toEqual(expected);
     });
 
     it('should calculate +2 days for NEGOTIATION stage', () => {
-      const result = calculateNextFollowUp({ stage: 'NEGOTIATION', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.NEGOTIATION, baseDate });
       const expected = addDays(baseDate, 2);
       expect(result).toEqual(expected);
     });
 
     it('should return null for CLOSED_WON stage', () => {
-      const result = calculateNextFollowUp({ stage: 'CLOSED_WON', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.CLOSED_WON, baseDate });
       expect(result).toBeNull();
     });
 
     it('should return null for CLOSED_LOST stage', () => {
-      const result = calculateNextFollowUp({ stage: 'CLOSED_LOST', baseDate });
+      const result = calculateNextFollowUp({ stage: Stage.CLOSED_LOST, baseDate });
       expect(result).toBeNull();
     });
 
     it('should use current date if baseDate not provided', () => {
       const before = new Date();
-      const result = calculateNextFollowUp({ stage: 'INQUIRY' });
+      const result = calculateNextFollowUp({ stage: Stage.INQUIRY });
       const after = new Date();
 
       expect(result).toBeDefined();

@@ -119,9 +119,9 @@ export async function pipelineValue(): Promise<PipelineValueReport> {
   // Initialize all active stages
   const activeStages = [
     Stage.INQUIRY,
-    Stage.QUALIFIED,
-    Stage.MEETING_SCHEDULED,
-    Stage.DEMO_COMPLETED,
+    Stage.QUALIFICATION,
+    Stage.DEMO_SCHEDULED,
+    Stage.DEMO_COMPLETE,
     Stage.PROPOSAL_SENT,
     Stage.NEGOTIATION,
   ]

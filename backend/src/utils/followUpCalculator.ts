@@ -13,17 +13,7 @@
  */
 
 import { addHours, addDays, startOfDay } from 'date-fns';
-
-export type Stage =
-  | 'INQUIRY'
-  | 'QUALIFICATION'
-  | 'OPPORTUNITY'
-  | 'DEMO_SCHEDULED'
-  | 'DEMO_COMPLETE'
-  | 'PROPOSAL_SENT'
-  | 'NEGOTIATION'
-  | 'CLOSED_WON'
-  | 'CLOSED_LOST';
+import { Stage } from '@leadoff/types';
 
 export interface FollowUpCalculationOptions {
   stage: Stage;
@@ -41,39 +31,47 @@ export function calculateNextFollowUp(options: FollowUpCalculationOptions): Date
   const { stage, baseDate = new Date(), demoDate } = options;
 
   switch (stage) {
-    case 'INQUIRY':
+    case Stage.INQUIRY:
       // +24 hours from now
       return addHours(baseDate, 24);
 
-    case 'QUALIFICATION':
+    case Stage.QUALIFICATION:
       // +48 hours from now
       return addHours(baseDate, 48);
 
-    case 'OPPORTUNITY':
+    case Stage.OPPORTUNITY:
       // +3 days from now
       return addDays(baseDate, 3);
 
-    case 'DEMO_SCHEDULED':
+    case Stage.DEMO_SCHEDULED:
       // 1 day before demo date (if provided), otherwise +1 day from now
       if (demoDate) {
         return addDays(startOfDay(demoDate), -1);
       }
       return addDays(baseDate, 1);
 
-    case 'DEMO_COMPLETE':
+    case Stage.DEMO_COMPLETE:
       // +1 day from now
       return addDays(baseDate, 1);
 
-    case 'PROPOSAL_SENT':
+    case Stage.PROPOSAL_SENT:
       // +3 days from now
       return addDays(baseDate, 3);
 
-    case 'NEGOTIATION':
+    case Stage.NEGOTIATION:
       // +2 days from now
       return addDays(baseDate, 2);
 
-    case 'CLOSED_WON':
-    case 'CLOSED_LOST':
+    case Stage.NURTURE_30_DAY:
+      // +30 days from now
+      return addDays(baseDate, 30);
+
+    case Stage.NURTURE_90_DAY:
+      // +90 days from now
+      return addDays(baseDate, 90);
+
+    case Stage.CLOSED_WON:
+    case Stage.CLOSED_LOST:
       // No follow-up needed for closed stages
       return null;
 
