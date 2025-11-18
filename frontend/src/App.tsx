@@ -5,6 +5,7 @@ import { Pipeline } from './pages/Pipeline'
 import { LeadDetail } from './pages/LeadDetail'
 import { Reports } from './pages/Reports'
 import { Archive } from './pages/Archive'
+import { Planner } from './pages/Planner'
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -69,6 +70,16 @@ function Navigation() {
               >
                 Archive
               </Link>
+              <Link
+                to="/planner"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === '/planner'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Planner
+              </Link>
             </div>
           </div>
         </div>
@@ -88,6 +99,7 @@ function App() {
             <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/archive" element={<Archive />} />
+            <Route path="/planner" element={<Planner />} />
             <Route path="/leads/:id" element={<LeadDetail />} />
           </Routes>
         </div>
