@@ -11,8 +11,8 @@ COPY package.json pnpm-lock.yaml* ./
 COPY backend/package.json backend/
 COPY shared/types/package.json shared/types/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (recursive to get all workspace packages)
+RUN pnpm install --frozen-lockfile -r
 
 # Copy source files
 COPY backend backend/
@@ -37,8 +37,8 @@ COPY package.json pnpm-lock.yaml* ./
 COPY backend/package.json backend/
 COPY shared/types/package.json shared/types/
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies only (recursive)
+RUN pnpm install --frozen-lockfile --prod -r
 
 # Copy built files and prisma
 COPY --from=base /app/backend/dist backend/dist
