@@ -11,6 +11,7 @@ import { leadActionRoutes } from './api/routes/leadActions'
 import { archiveRoutes } from './api/routes/archive'
 import { plannerRoutes } from './api/routes/planner'
 import { importRoutes } from './api/routes/import'
+import { templateRoutes } from './api/routes/templates'
 
 const SERVER_PORT = 3000
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5174'
@@ -43,6 +44,7 @@ await server.register(leadActionRoutes)
 await server.register(archiveRoutes)
 await server.register(plannerRoutes)
 await server.register(importRoutes)
+await server.register(templateRoutes)
 
 // Start server
 const start = async () => {
