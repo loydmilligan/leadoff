@@ -102,8 +102,47 @@ Multiple places where users can click to view lead details:
 
 **Implementation**: All lead cards must use React Router `Link` or `useNavigate` hook
 
+## Lead Lifecycle Management
+
+### New Stages
+
+Phase 8 introduces nurture stages for long-term follow-up:
+- **NURTURE_30_DAY**: Short-term nurture (30-day follow-up)
+- **NURTURE_90_DAY**: Long-term nurture (90-day follow-up)
+
+### Next Action Tracking
+
+Leads can have a "next action" to ensure timely follow-up:
+- **nextActionType**: Type of action (CALL, EMAIL, MEETING, PROPOSAL, FOLLOW_UP)
+- **nextActionDescription**: Description of what needs to be done
+- **nextActionDueDate**: When the action is due
+
+### Communication Templates
+
+Templates allow quick insertion of common messages:
+- Stored in `Template` model with type (EMAIL, PHONE_CALL, TEXT_MESSAGE)
+- Load via API: `GET /api/templates?type=EMAIL`
+- Templates support variable substitution ({{companyName}}, {{contactName}})
+
+### File Upload Configuration
+
+Proposal attachments support:
+- **Allowed types**: PDF (.pdf), Excel (.xlsx, .xls)
+- **Storage**: `backend/uploads/` directory
+- **Max size**: 10MB per file
+- **Fields**: `proposalFilePath`, `priceSheetPath` in Proposal model
+
+### AI Integration Setup
+
+AI-powered activity summarization:
+- **Provider**: Anthropic Claude (claude-3-5-sonnet-20241022)
+- **API Key**: Set `ANTHROPIC_API_KEY` in backend/.env
+- **Endpoint**: `POST /api/activities/:id/summarize`
+- **Usage**: Summarizes long activity notes into concise bullet points
+
 ## Recent Changes
 
+- 2025-11-18: Phase 8 completed (Lead Lifecycle Management)
 - 2025-11-15: Phase 6 completed (Demo & Opportunity Tracking)
 - 2025-11-15: Added testing protocol and issue tracking requirements
 - 2025-11-13: Project initialized
