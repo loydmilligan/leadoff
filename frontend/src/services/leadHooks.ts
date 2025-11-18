@@ -37,6 +37,7 @@ export interface Activity {
   type: string
   subject: string
   notes?: string
+  aiSummary?: string
   completed: boolean
   dueDate?: string
   completedAt?: string

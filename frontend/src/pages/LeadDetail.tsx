@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLead } from '../services/leadHooks'
+import { useSummarizeActivity } from '../services/aiHooks'
 import { NarrowScreenLayout } from '../layouts/NarrowScreenLayout'
 import { FollowUpIndicator } from '../components/FollowUpIndicator'
 import { ActivityLogForm } from '../components/ActivityLogForm'
@@ -34,6 +35,11 @@ export function LeadDetail() {
   const [showNurtureModal, setShowNurtureModal] = useState(false)
 
   const { data: lead, isLoading, isError, refetch } = useLead(id!)
+  const summarizeActivity = useSummarizeActivity()
+
+  const handleSummarize = async (activityId: string) => {
+    await summarizeActivity.mutateAsync(activityId)
+  }
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
@@ -209,7 +215,7 @@ export function LeadDetail() {
                           className="border-l-4 border-blue-500 pl-4 py-2"
                         >
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="flex-1">
                               <h4 className="font-medium text-gray-900">{activity.subject}</h4>
                               <p className="text-sm text-gray-600">
                                 {activity.type.replace(/_/g, ' ')}
@@ -217,8 +223,23 @@ export function LeadDetail() {
                               {activity.notes && (
                                 <p className="mt-1 text-sm text-gray-700">{activity.notes}</p>
                               )}
+                              {activity.notes && activity.notes.length > 200 && !activity.aiSummary && (
+                                <button
+                                  onClick={() => handleSummarize(activity.id)}
+                                  disabled={summarizeActivity.isPending}
+                                  className="mt-2 text-sm text-blue-600 hover:underline disabled:text-gray-400"
+                                >
+                                  {summarizeActivity.isPending ? 'Summarizing...' : 'AI Summarize'}
+                                </button>
+                              )}
+                              {activity.aiSummary && (
+                                <div className="mt-2 p-3 bg-blue-50 rounded-md border-l-4 border-blue-500">
+                                  <p className="text-sm font-semibold text-blue-900 mb-1">AI Summary:</p>
+                                  <p className="text-sm text-blue-800">{activity.aiSummary}</p>
+                                </div>
+                              )}
                             </div>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 ml-3">
                               {formatDate(activity.createdAt)}
                             </span>
                           </div>
