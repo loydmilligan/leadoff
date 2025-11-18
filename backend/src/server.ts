@@ -12,6 +12,7 @@ import { archiveRoutes } from './api/routes/archive'
 import { plannerRoutes } from './api/routes/planner'
 import { importRoutes } from './api/routes/import'
 import { templateRoutes } from './api/routes/templates'
+import { proposalFileRoutes } from './api/routes/proposalFiles'
 
 const SERVER_PORT = 3000
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5174'
@@ -45,6 +46,7 @@ await server.register(archiveRoutes)
 await server.register(plannerRoutes)
 await server.register(importRoutes)
 await server.register(templateRoutes)
+await server.register(proposalFileRoutes)
 
 // Start server
 const start = async () => {

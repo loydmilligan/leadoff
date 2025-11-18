@@ -12,6 +12,7 @@ services:
       - .env
     volumes:
       - backend-data:/app/backend/data
+      - ./backend/uploads:/app/backend/uploads
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]

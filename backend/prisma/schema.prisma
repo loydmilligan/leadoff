@@ -141,6 +141,10 @@ model Proposal {
   contractTerm    String?
   status          String @default("DRAFT") // ProposalStatus enum
   notes           String?
+  proposalFilePath    String?
+  priceSheetPath      String?
+  proposalFileName    String?
+  priceSheetFileName  String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
