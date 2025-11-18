@@ -1,0 +1,53 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Development
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist
+build
+.next
+.nuxt
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Testing
+coverage
+.nyc_output
+
+# Database
+*.db
+*.db-journal
+backend/data
+
+# Logs
+logs
+*.log
+
+# Documentation
+*.md
+docs
+
+# Misc
+.prettierrc
+.eslintrc
+tsconfig.json

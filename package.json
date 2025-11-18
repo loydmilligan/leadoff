@@ -10,7 +10,8 @@
     "shared/types"
   ],
   "scripts": {
-    "dev": "concurrently \"pnpm --filter leadoff-backend dev\" \"pnpm --filter leadoff-frontend dev\"",
+    "cleanup": "lsof -ti:3000,5174 2>/dev/null | xargs kill -9 2>/dev/null || true",
+    "dev": "pnpm cleanup && concurrently \"pnpm --filter leadoff-backend dev\" \"pnpm --filter leadoff-frontend dev\"",
     "build": "pnpm --recursive run build",
     "test": "pnpm --recursive run test",
     "test:unit": "pnpm --recursive run test:unit",

@@ -45,6 +45,15 @@ export enum ActivityType {
   TASK = 'TASK',
 }
 
+export enum ProposalStatus {
+  DRAFT = 'DRAFT',
+  SENT = 'SENT',
+  VIEWED = 'VIEWED',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  EXPIRED = 'EXPIRED',
+}
+
 export enum LostReasonCategory {
   PRICE = 'PRICE',
   COMPETITOR = 'COMPETITOR',

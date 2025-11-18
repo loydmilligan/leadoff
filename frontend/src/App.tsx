@@ -1,24 +1,86 @@
-import { Stage } from '@leadoff/types'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Dashboard } from './pages/Dashboard'
+import { Pipeline } from './pages/Pipeline'
+import { LeadDetail } from './pages/LeadDetail'
+import { Reports } from './pages/Reports'
+
+// Create Query Client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30000, // 30 seconds
+    },
+  },
+})
+
+function Navigation() {
+  const location = useLocation()
+
+  return (
+    <nav className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <span className="text-xl font-bold text-blue-600">LeadOff CRM</span>
+            </div>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link
+                to="/"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === '/'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/pipeline"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === '/pipeline'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Pipeline
+              </Link>
+              <Link
+                to="/reports"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  location.pathname === '/reports'
+                    ? 'border-blue-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Reports
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  )
+}
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="card max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-primary-700 mb-4">
-          LeadOff CRM
-        </h1>
-        <p className="text-gray-600 mb-4">
-          Welcome to LeadOff - Your lead management system
-        </p>
-        <div className="flex gap-2">
-          <button className="btn-primary">Primary Button</button>
-          <button className="btn-secondary">Secondary Button</button>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/leads/:id" element={<LeadDetail />} />
+          </Routes>
         </div>
-        <div className="mt-4 text-sm text-gray-500">
-          <p>Available stages: {Object.keys(Stage).join(', ')}</p>
-        </div>
-      </div>
-    </div>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 
