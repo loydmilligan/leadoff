@@ -3,9 +3,13 @@
  * Display lead information in a card format
  */
 
+import { useState } from 'react'
 import { Lead } from '../services/leadHooks'
 import { Stage } from '@leadoff/types'
 import { FollowUpIndicator } from './FollowUpIndicator'
+import { CloseAsWonModal } from './modals/CloseAsWonModal'
+import { CloseAsLostModal } from './modals/CloseAsLostModal'
+import { MoveToNurtureModal } from './modals/MoveToNurtureModal'
 
 interface LeadCardProps {
   lead: Lead
@@ -25,6 +29,11 @@ const STAGE_COLORS: Record<Stage, string> = {
 }
 
 export function LeadCard({ lead, onClick }: LeadCardProps) {
+  const [showActionMenu, setShowActionMenu] = useState(false)
+  const [showWonModal, setShowWonModal] = useState(false)
+  const [showLostModal, setShowLostModal] = useState(false)
+  const [showNurtureModal, setShowNurtureModal] = useState(false)
+
   const stageColor = STAGE_COLORS[lead.currentStage as Stage] || STAGE_COLORS[Stage.INQUIRY]
 
   const formatDate = (dateString?: string) => {
@@ -48,11 +57,61 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
           )}
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageColor}`}
-          >
-            {lead.currentStage.replace(/_/g, ' ')}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageColor}`}
+            >
+              {lead.currentStage.replace(/_/g, ' ')}
+            </span>
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowActionMenu(!showActionMenu)
+                }}
+                className="p-1 text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+
+              {showActionMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowWonModal(true)
+                      setShowActionMenu(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                  >
+                    Close as Won
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowLostModal(true)
+                      setShowActionMenu(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                  >
+                    Close as Lost
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowNurtureModal(true)
+                      setShowActionMenu(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                  >
+                    Move to Nurture
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
           <FollowUpIndicator nextFollowUpDate={lead.nextFollowUpDate} compact />
         </div>
       </div>
@@ -108,6 +167,26 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <CloseAsWonModal
+        leadId={lead.id}
+        companyName={lead.companyName}
+        isOpen={showWonModal}
+        onClose={() => setShowWonModal(false)}
+      />
+      <CloseAsLostModal
+        leadId={lead.id}
+        companyName={lead.companyName}
+        isOpen={showLostModal}
+        onClose={() => setShowLostModal(false)}
+      />
+      <MoveToNurtureModal
+        leadId={lead.id}
+        companyName={lead.companyName}
+        isOpen={showNurtureModal}
+        onClose={() => setShowNurtureModal(false)}
+      />
     </div>
   )
 }
