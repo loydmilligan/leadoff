@@ -8,7 +8,7 @@ import {
 
 export async function archiveRoutes(fastify: FastifyInstance) {
   // Get all archived leads
-  fastify.get('/api/v1/archive', async (request, reply) => {
+  fastify.get('/api/v1/archive', async (_request, reply) => {
     const leads = await getArchivedLeads()
     return reply.code(200).send(leads)
   })

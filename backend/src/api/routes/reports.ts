@@ -16,7 +16,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
    * GET /api/v1/reports/pipeline-value
    * Returns stage-by-stage pipeline economics and conversion rates
    */
-  fastify.get('/api/v1/reports/pipeline-value', async (request, reply) => {
+  fastify.get('/api/v1/reports/pipeline-value', async (_request, reply) => {
     try {
       const report = await pipelineValue()
       return reply.code(200).send(report)
@@ -33,7 +33,7 @@ export async function reportRoutes(fastify: FastifyInstance) {
    * GET /api/v1/reports/lead-age
    * Identifies stale leads (>14 days) at risk
    */
-  fastify.get('/api/v1/reports/lead-age', async (request, reply) => {
+  fastify.get('/api/v1/reports/lead-age', async (_request, reply) => {
     try {
       const report = await leadAge()
       return reply.code(200).send(report)
@@ -60,25 +60,28 @@ export async function reportRoutes(fastify: FastifyInstance) {
     try {
       const { startDate, endDate } = request.query
 
-      const start = startDate ? new Date(startDate) : undefined
-      const end = endDate ? new Date(endDate) : undefined
-
-      // Validate dates
-      if (start && isNaN(start.getTime())) {
-        return reply.code(400).send({
-          error: 'Invalid startDate format',
-          message: 'startDate must be a valid ISO 8601 date string',
-        })
+      // Validate dates if provided
+      if (startDate) {
+        const date = new Date(startDate)
+        if (isNaN(date.getTime())) {
+          return reply.code(400).send({
+            error: 'Invalid startDate format',
+            message: 'startDate must be a valid ISO 8601 date string',
+          })
+        }
       }
 
-      if (end && isNaN(end.getTime())) {
-        return reply.code(400).send({
-          error: 'Invalid endDate format',
-          message: 'endDate must be a valid ISO 8601 date string',
-        })
+      if (endDate) {
+        const date = new Date(endDate)
+        if (isNaN(date.getTime())) {
+          return reply.code(400).send({
+            error: 'Invalid endDate format',
+            message: 'endDate must be a valid ISO 8601 date string',
+          })
+        }
       }
 
-      const report = await weeklySummary(start, end)
+      const report = await weeklySummary(startDate, endDate)
       return reply.code(200).send(report)
     } catch (error) {
       fastify.log.error(error)
@@ -103,25 +106,28 @@ export async function reportRoutes(fastify: FastifyInstance) {
     try {
       const { startDate, endDate } = request.query
 
-      const start = startDate ? new Date(startDate) : undefined
-      const end = endDate ? new Date(endDate) : undefined
-
-      // Validate dates
-      if (start && isNaN(start.getTime())) {
-        return reply.code(400).send({
-          error: 'Invalid startDate format',
-          message: 'startDate must be a valid ISO 8601 date string',
-        })
+      // Validate dates if provided
+      if (startDate) {
+        const date = new Date(startDate)
+        if (isNaN(date.getTime())) {
+          return reply.code(400).send({
+            error: 'Invalid startDate format',
+            message: 'startDate must be a valid ISO 8601 date string',
+          })
+        }
       }
 
-      if (end && isNaN(end.getTime())) {
-        return reply.code(400).send({
-          error: 'Invalid endDate format',
-          message: 'endDate must be a valid ISO 8601 date string',
-        })
+      if (endDate) {
+        const date = new Date(endDate)
+        if (isNaN(date.getTime())) {
+          return reply.code(400).send({
+            error: 'Invalid endDate format',
+            message: 'endDate must be a valid ISO 8601 date string',
+          })
+        }
       }
 
-      const report = await winLossAnalysis(start, end)
+      const report = await winLossAnalysis(startDate, endDate)
       return reply.code(200).send(report)
     } catch (error) {
       fastify.log.error(error)
