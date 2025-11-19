@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 
 // Configure multer
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req, _file, cb) => {
     const proposalId = (req.params as any).id
     const dir = path.join(__dirname, '../../../uploads/proposals', proposalId)
     fs.mkdirSync(dir, { recursive: true })
@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = [
       'application/pdf',
       'application/vnd.ms-excel',
@@ -45,7 +45,7 @@ export async function proposalFileRoutes(fastify: FastifyInstance) {
   fastify.post('/api/v1/proposals/:id/upload-proposal', async (request, reply) => {
     const { id } = request.params as { id: string }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, _reject) => {
       upload.single('file')(request as any, reply as any, async (err: any) => {
         if (err) {
           return reply.code(400).send({ error: err.message })
@@ -73,7 +73,7 @@ export async function proposalFileRoutes(fastify: FastifyInstance) {
   fastify.post('/api/v1/proposals/:id/upload-price-sheet', async (request, reply) => {
     const { id } = request.params as { id: string }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((_resolve, _reject) => {
       upload.single('file')(request as any, reply as any, async (err: any) => {
         if (err) {
           return reply.code(400).send({ error: err.message })
@@ -110,7 +110,11 @@ export async function proposalFileRoutes(fastify: FastifyInstance) {
       return reply.code(404).send({ error: 'File not found on disk' })
     }
 
-    return reply.sendFile(path.basename(proposal.proposalFilePath), path.dirname(proposal.proposalFilePath))
+    const stream = fs.createReadStream(proposal.proposalFilePath)
+    const filename = proposal.proposalFileName || path.basename(proposal.proposalFilePath)
+    reply.type('application/pdf')
+    reply.header('Content-Disposition', `inline; filename="${filename}"`)
+    return reply.send(stream)
   })
 
   // Download price sheet
@@ -126,7 +130,13 @@ export async function proposalFileRoutes(fastify: FastifyInstance) {
       return reply.code(404).send({ error: 'File not found on disk' })
     }
 
-    return reply.sendFile(path.basename(proposal.priceSheetPath), path.dirname(proposal.priceSheetPath))
+    const stream = fs.createReadStream(proposal.priceSheetPath)
+    const filename = proposal.priceSheetFileName || path.basename(proposal.priceSheetPath)
+    const ext = path.extname(proposal.priceSheetPath).toLowerCase()
+    const contentType = ext === '.pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    reply.type(contentType)
+    reply.header('Content-Disposition', `inline; filename="${filename}"`)
+    return reply.send(stream)
   })
 
   // Delete proposal file

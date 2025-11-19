@@ -32,6 +32,11 @@ export async function importLeadsFromCSV(csvContent: string) {
     const row = results.data[i]
     const rowNumber = i + 2 // +2 because row 1 is header, array is 0-indexed
 
+    // Skip if row is undefined
+    if (!row) {
+      continue
+    }
+
     try {
       // Validate required fields
       if (!row.companyName || !row.contactName || !row.phone || !row.email) {

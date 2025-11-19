@@ -319,7 +319,7 @@ export async function weeklySummary(
     .filter((l) => l.activities.length > 0)
     .map((l) => {
       const leadCreated = new Date(l.createdAt).getTime()
-      const firstActivity = new Date(l.activities[0].createdAt).getTime()
+      const firstActivity = new Date(l.activities[0]!.createdAt).getTime()
       return (firstActivity - leadCreated) / (1000 * 60 * 60) // hours
     })
 
@@ -437,9 +437,9 @@ export async function winLossAnalysis(
     const cycles = leads
       .filter((l) => l.stageHistory.length > 0)
       .map((l) => {
-        const firstStage = new Date(l.stageHistory[0].changedAt).getTime()
+        const firstStage = new Date(l.stageHistory[0]!.changedAt).getTime()
         const lastStage = new Date(
-          l.stageHistory[l.stageHistory.length - 1].changedAt
+          l.stageHistory[l.stageHistory.length - 1]!.changedAt
         ).getTime()
         return (lastStage - firstStage) / (1000 * 60 * 60 * 24) // days
       })
