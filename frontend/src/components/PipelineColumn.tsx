@@ -34,6 +34,8 @@ const STAGE_LABELS: Record<Stage, string> = {
   [Stage.NEGOTIATION]: 'Negotiation',
   [Stage.CLOSED_WON]: 'Closed Won',
   [Stage.CLOSED_LOST]: 'Closed Lost',
+  [Stage.NURTURE_30_DAY]: 'Nurture (30-Day)',
+  [Stage.NURTURE_90_DAY]: 'Nurture (90-Day)',
 };
 
 // Stage color schemes
@@ -47,6 +49,8 @@ const STAGE_COLORS: Record<Stage, string> = {
   [Stage.NEGOTIATION]: 'bg-orange-50 border-orange-300',
   [Stage.CLOSED_WON]: 'bg-green-50 border-green-300',
   [Stage.CLOSED_LOST]: 'bg-red-50 border-red-300',
+  [Stage.NURTURE_30_DAY]: 'bg-teal-50 border-teal-300',
+  [Stage.NURTURE_90_DAY]: 'bg-emerald-50 border-emerald-300',
 };
 
 // Header badge colors
@@ -60,6 +64,8 @@ const STAGE_BADGE_COLORS: Record<Stage, string> = {
   [Stage.NEGOTIATION]: 'bg-orange-200 text-orange-800',
   [Stage.CLOSED_WON]: 'bg-green-200 text-green-800',
   [Stage.CLOSED_LOST]: 'bg-red-200 text-red-800',
+  [Stage.NURTURE_30_DAY]: 'bg-teal-200 text-teal-800',
+  [Stage.NURTURE_90_DAY]: 'bg-emerald-200 text-emerald-800',
 };
 
 export function PipelineColumn({ stage, leads, children }: PipelineColumnProps) {

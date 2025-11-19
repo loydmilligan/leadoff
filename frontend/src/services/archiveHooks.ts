@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from './api'
+import type { Lead } from './leadHooks'
 
 export function useArchivedLeads() {
-  return useQuery({
+  return useQuery<Lead[]>({
     queryKey: ['archive'],
     queryFn: async () => {
       return await api.get('/archive')

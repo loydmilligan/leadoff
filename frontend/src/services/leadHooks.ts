@@ -265,6 +265,10 @@ export interface Proposal {
   contractTerm?: string
   status: 'DRAFT' | 'SENT' | 'VIEWED' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED'
   notes?: string
+  proposalFilePath?: string
+  priceSheetPath?: string
+  proposalFileName?: string
+  priceSheetFileName?: string
   createdAt: string
   updatedAt: string
 }
