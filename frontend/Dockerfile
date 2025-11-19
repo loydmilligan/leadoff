@@ -6,13 +6,13 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
+# Copy package files and workspace config
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend/package.json frontend/
 COPY shared/types/package.json shared/types/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (recursive to get all workspace packages)
+RUN pnpm install --frozen-lockfile -r
 
 # Copy source files
 COPY frontend frontend/
