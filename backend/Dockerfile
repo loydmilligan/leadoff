@@ -40,13 +40,15 @@ COPY shared/types/package.json shared/types/
 # Install production dependencies only (recursive)
 RUN pnpm install --frozen-lockfile --prod -r
 
-# Copy built files and prisma
+# Copy built files and prisma schema
 COPY --from=base /app/backend/dist backend/dist
 COPY --from=base /app/backend/prisma backend/prisma
-COPY --from=base /app/backend/node_modules/.prisma backend/node_modules/.prisma
 COPY --from=base /app/shared shared/
 
 WORKDIR /app/backend
+
+# Generate Prisma client in production stage
+RUN pnpm exec prisma generate
 
 # Create data directory for SQLite
 RUN mkdir -p data
