@@ -25,8 +25,11 @@ COPY shared shared/
 WORKDIR /app/backend
 RUN pnpm exec prisma generate
 
-# Build
+# Build TypeScript
 RUN pnpm build
+
+# Verify dist directory was created
+RUN ls -la dist/ && test -f dist/server.js || (echo "ERROR: dist/server.js not found after build" && exit 1)
 
 # Production stage
 FROM node:20-alpine AS production
