@@ -1,6 +1,9 @@
 # Backend Dockerfile for LeadOff CRM
 FROM node:20-alpine AS base
 
+# Install required dependencies for Prisma
+RUN apk add --no-cache openssl libc6-compat
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -27,6 +30,9 @@ RUN pnpm build
 
 # Production stage
 FROM node:20-alpine AS production
+
+# Install required dependencies for Prisma
+RUN apk add --no-cache openssl libc6-compat
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
